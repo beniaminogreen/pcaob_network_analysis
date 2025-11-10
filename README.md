@@ -1,8 +1,8 @@
 # PACOB Stock Screener
 
-This repository holds materials for my PACOB stock screener, which identifies NASDAQ and NYSE listed stocks in the 500M-1B range that have anomalous audit histories.  The aim is to identify firms that have an elevated risk of a material misstatement on SEC filings.
+This repository holds materials for my PACOB stock screener, which identifies NASDAQ and NYSE listed stocks in with market caps between $500M-10B that have anomalous audit histories.  Anomalous audit histories are defined as either a pattern of moving between audit firms, or routinely partnering with firms or audit partners who have been sanctioned for lax audit supervision, or historically have partnered with suspicious companies. The aim is to identify companies that have an elevated risk of a material misstatement on SEC filings.
 
-Specifically, I identify: 
+Specifically, the code identifies identify: 
 
 - Companies that routinely contract with audit firms that have been sanctioned by PACOB for lax oversight 
 - Companies over $1B in market cap that are advised by firms that seem 'too small' or by firms that mostly audit firms in a different sector
