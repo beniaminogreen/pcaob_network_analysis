@@ -8,8 +8,7 @@
 #' @return A data frame containing company profile information.
 #' @examples
 #' get_company_profile_by_cik("320193")
-get_company_profile_by_cik <- function(cik, api_key = NULL, wait_time = 0.15) {
-  # Rate limiting (max 200 requests/min → wait ≥ 0.3 seconds)
+get_company_profile_by_cik <- function(cik, api_key = NULL, wait_time = 60/270) {
   Sys.sleep(wait_time)
 
   # Build API URL
@@ -38,4 +37,38 @@ get_company_profile_by_cik <- function(cik, api_key = NULL, wait_time = 0.15) {
   }
 
   return(as.data.frame(data))
+}
+
+get_market_caps_by_symbol <- function(symbol, api_key = NULL, wait_time = 60/270) {
+  Sys.sleep(wait_time)
+
+  base_url <- "https://financialmodelingprep.com/stable/historical-market-capitalization"
+  params <- list(
+    symbol = symbol, 
+    limit = 5000, 
+    to = "2025-12-01",
+    from = "2016-01-01"
+  )
+
+  if (!is.null(api_key)) {
+    params$apikey <- api_key
+  }
+
+  res <- GET(base_url, query = params)
+
+  if (http_error(res)) {
+    warning(sprintf("Request failed [%s]: %s", status_code(res), http_status(res)$message))
+    return(NULL)
+  }
+
+  # Parse and return JSON
+  data <- fromJSON(content(res, as = "text", encoding = "UTF-8"))
+
+  # Handle case when no data is returned
+  if (length(data) == 0) {
+    return(NULL)
+  }
+
+  return(as.data.frame(data))
+
 }

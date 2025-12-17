@@ -1,9 +1,20 @@
-clean_firm_data <- function(raw_data_file) {
+clean_data <- function(raw_data_file) {
+  data <- read_csv(raw_data_file) %>%
+    rename_with(clean_name) %>%
+    mutate(
+      audit_report_date = parse_dates(audit_report_date),
+      fiscal_period_end_date = parse_dates(fiscal_period_end_date),
+      report_year = year(audit_report_date),
+      fiscal_year = year(fiscal_period_end_date)
+    ) %>%
+    filter(
+      audit_report_type == "Issuer, other than Employee Benefit Plan or Investment Company"
+    )
 
-  auditor_data <- read_csv(raw_data_file) %>%
-    rename_with(clean_name)
+  return(data)
+}
 
-
+clean_firm_data <- function(auditor_data) {
   firm_level_data <- auditor_data %>%
     group_by(firm_id) %>%
     summarize(
@@ -16,11 +27,7 @@ clean_firm_data <- function(raw_data_file) {
   firm_level_data
 }
 
-clean_client_data <- function(raw_data_file) {
-
-  auditor_data <- read_csv(raw_data_file) %>%
-    rename_with(clean_name)
-
+clean_client_data <- function(auditor_data) {
   superceded_filings <- unique(auditor_data$amends_firm_form_id)
 
   client_level_data <- auditor_data %>%
@@ -99,4 +106,29 @@ augment_client_data  <- function(client_data, api_data) {
   ) 
 
   return(full_client_data)
+}
+
+
+
+
+get_market_cap_data <- function(api_data) {
+
+  api_key <- Sys.getenv("FINPREP_API_KEY")
+
+  symbols <- api_data %>% 
+    pull(symbol) %>% 
+    unique() 
+
+  output <- tibble(
+    symbol = symbols
+    )  %>% 
+    drop_na()
+
+  output %>% 
+    mutate(
+      historical_market_cap = map(symbol, 
+        get_market_caps_by_symbol, 
+        api_key = api_key
+      )
+    )
 }
